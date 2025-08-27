@@ -42,7 +42,7 @@
         <jctools-core.version>4.0.5</jctools-core.version>
         <log4j.version>2.25.0</log4j.version>
         <protobuf.version>4.31.1</protobuf.version>
-        <swagger.version>2.2.31</swagger.version>
+        <swagger.version>2.2.35</swagger.version>
         <swagger-ui.version>5.25.2</swagger-ui.version>
 
         <!-- Runtime Deps for Testing -->
