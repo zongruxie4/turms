@@ -23,7 +23,7 @@ RUN cd ./turms-admin \
 ####################################################################
 # Stage 1 : RUN
 ####################################################################
-FROM nginx:1.28.0-alpine
+FROM nginx:1.29.4-alpine
 COPY --from=builder /turms-admin/dist /usr/share/nginx/html
 
 RUN echo '                                                        \
