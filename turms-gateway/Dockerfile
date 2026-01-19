@@ -18,7 +18,7 @@ RUN mvn clean package -am -B -DskipUTs -DskipITs -P artifact-fat-jar -pl turms-g
 ####################################################################
 # Stage 1:  BUILD LAYERS
 ####################################################################
-FROM eclipse-temurin:21.0.7_6-jre-jammy AS layers-builder
+FROM eclipse-temurin:21.0.9_10-jre-jammy AS layers-builder
 WORKDIR /build/
 COPY --from=maven-builder /turms-gateway/target/*-exec.jar ./app.jar
 RUN ["mkdir", "dependencies", "snapshot-dependencies", "spring-boot-loader", "application"]
@@ -29,7 +29,7 @@ RUN java -Djarmode=layertools -jar app.jar extract
 ####################################################################
 # Declare the exact version to ensure there is no unexpected behavior in Java
 # because we have some UNSAFE operations on Java internal classes
-FROM eclipse-temurin:21.0.7_6-jre-jammy
+FROM eclipse-temurin:21.0.9_10-jre-jammy
 
 ENV TURMS_GATEWAY_HOME=/opt/turms/turms-gateway
 WORKDIR ${TURMS_GATEWAY_HOME}
