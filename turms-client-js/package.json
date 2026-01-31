@@ -61,7 +61,7 @@
     "@typescript-eslint/parser": "^7.18.0",
     "core-js": "^3.39.0",
     "dts-bundle": "^0.7.3",
-    "eslint": "^8.57.1",
+    "eslint": "^9.26.0",
     "eslint-import-resolver-typescript": "^3.7.0",
     "eslint-plugin-import": "^2.31.0",
     "glob": "^11.0.0",
