@@ -2,42 +2,57 @@
 
 services:
   # MongoDB
-  mongodb-router:
-    image: "bitnami/mongodb-sharded:8.0.12"
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-router
-      - MONGODB_SHARDING_MODE=mongos
-      - MONGODB_CFG_PRIMARY_HOST=mongodb-config
-      - MONGODB_CFG_REPLICA_SET_NAME=cfgreplicaset
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
-      - MONGODB_ROOT_PASSWORD=turms
+  mongodb-config:
+    image: mongo:8.0.12-noble
+    entrypoint: [ "mongod", "--port", "27017", "--configsvr", "--replSet", "rs-config", "--bind_ip_all" ]
     healthcheck:
-      # Use "mongo -u root -p turms --port 27017 --eval='sh.status()' | grep mongodb-shard | grep -q '\"state\" : 1'" before v5.0
-      test: "mongosh -u root -p turms --port 27017 --eval='sh.status()' | sed -n '/shards/,/---/p' | grep -q 'state: 1'"
+      test: [ "CMD", "mongosh", "--quiet", "--eval", "db.runCommand(\"ping\").ok" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
   mongodb-shard:
-    image: "bitnami/mongodb-sharded:8.0.12"
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-shard
-      - MONGODB_SHARDING_MODE=shardsvr
-      - MONGODB_MONGOS_HOST=mongodb-router
-      - MONGODB_ROOT_PASSWORD=turms
-      - MONGODB_REPLICA_SET_MODE=primary
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
-      - MONGODB_REPLICA_SET_NAME=shard01
+    image: mongo:8.0.12-noble
+    entrypoint: [ "mongod", "--port", "27017", "--shardsvr", "--replSet", "shard01", "--bind_ip_all" ]
+    healthcheck:
+      test: [ "CMD", "mongosh", "--quiet", "--eval", "db.runCommand(\"ping\").ok" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  mongodb-config:
-    image: "bitnami/mongodb-sharded:8.0.12"
-    environment:
-      - MONGODB_ADVERTISED_HOSTNAME=mongodb-config
-      - MONGODB_SHARDING_MODE=configsvr
-      - MONGODB_ROOT_PASSWORD=turms
-      - MONGODB_REPLICA_SET_MODE=primary
-      - MONGODB_REPLICA_SET_KEY=replicasetkey123
-      - MONGODB_REPLICA_SET_NAME=cfgreplicaset
+  mongodb-router:
+    image: mongo:8.0.12-noble
+    entrypoint: [ "mongos", "--port", "27017", "--configdb", "rs-config/mongodb-config:27017", "--bind_ip_all" ]
+    depends_on:
+      mongodb-config:
+        condition: service_healthy
+      mongodb-shard:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "mongosh", "--quiet", "--eval", "db.runCommand(\"ping\").ok" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb-setup:
+    image: mongo:8.0.12-noble
+    depends_on:
+      mongodb-config:
+        condition: service_healthy
+      mongodb-shard:
+        condition: service_healthy
+      mongodb-router:
+        condition: service_started
+    restart: "no"
+    entrypoint:
+      - bash
+      - -c
+      - |
+        mongosh --host mongodb-config:27017 --eval "rs.initiate({_id: 'rs-config', configsvr: true, version: 1, members: [ { _id: 0, host : 'mongodb-config:27017' } ] })"
+        mongosh --host mongodb-shard:27017 --eval "rs.initiate({_id: 'shard01', version: 1, members: [ { _id: 0, host : 'mongodb-shard:27017' } ] })"
+        sleep 10
+        mongosh --host mongodb-router:27017 --eval "sh.addShard('shard01/mongodb-shard:27017')"
+        mongosh --host mongodb-router:27017 --eval "db.getSiblingDB('admin').createUser({user: 'root', pwd: 'turms', roles: [{role: 'root', db: 'admin'}]})"
 
   # Redis
   redis:
@@ -97,6 +112,8 @@ services:
     depends_on:
       mongodb-router:
         condition: service_healthy
+      mongodb-setup:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
       turms-service:
@@ -134,6 +151,8 @@ services:
     depends_on:
       mongodb-router:
         condition: service_healthy
+      mongodb-setup:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
     environment:
