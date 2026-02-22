@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.3</version>
+        <version>3.5.11</version>
         <!-- To skip the local file search and directly search the parent POM in Maven repositories -->
         <relativePath/>
     </parent>
@@ -29,7 +29,7 @@
 
     <properties>
         <!-- Project -->
-        <java.version>21</java.version>
+        <java.version>25</java.version>
         <revision>0.10.0-SNAPSHOT</revision>
 
         <!-- Runtime Deps -->
@@ -37,7 +37,7 @@
         <blockhound.version>1.0.13.RELEASE</blockhound.version>
         <disruptor.version>4.0.0</disruptor.version>
         <eclipse-collections.version>12.0.0</eclipse-collections.version>
-        <graalvm.version>23.0.8</graalvm.version>
+        <graalvm.version>25.0.2</graalvm.version>
         <icu4j.version>77.1</icu4j.version>
         <jctools-core.version>4.0.5</jctools-core.version>
         <log4j.version>2.25.0</log4j.version>
@@ -155,12 +155,18 @@
             <!-- Plugin -->
             <dependency>
                 <groupId>org.graalvm.tools</groupId>
-                <artifactId>chromeinspector</artifactId>
+                <artifactId>chromeinspector-tool</artifactId>
                 <version>${graalvm.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.graalvm.js</groupId>
                 <artifactId>js</artifactId>
+                <version>${graalvm.version}</version>
+                <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.graalvm.polyglot</groupId>
+                <artifactId>polyglot</artifactId>
                 <version>${graalvm.version}</version>
             </dependency>
 
