@@ -10,7 +10,7 @@ jobs:
         sdk: [3.0, stable, beta]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4.2.2
+        uses: actions/checkout@v6.0.2
 
       - name: Set up Dart
         uses: dart-lang/setup-dart@v1.7.1
