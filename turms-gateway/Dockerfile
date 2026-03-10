@@ -31,6 +31,11 @@ RUN java -Djarmode=layertools -jar app.jar extract
 # because we have some UNSAFE operations on Java internal classes
 FROM eclipse-temurin:25.0.2_10-jre-noble
 
+# Install curl for health check
+# Notes: Some base images have installed curl,
+# run "docker run -it --rm <image> curl --version" to check if curl is installed.
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
 ENV TURMS_GATEWAY_HOME=/opt/turms/turms-gateway
 WORKDIR ${TURMS_GATEWAY_HOME}
 
